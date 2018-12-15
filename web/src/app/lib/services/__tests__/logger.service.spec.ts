@@ -4,13 +4,19 @@ import {environment} from '../../../../environments/environment'
 //jest.mock('../../../../environments/environment');
 
 describe('LoggerService', () => {
+    let consoleSpy;
 
     beforeEach(() => {
+        consoleSpy = jest.spyOn(global.console, 'log');
         TestBed.configureTestingModule({
             providers: [
                 LoggerService,
             ]
         });
+    });
+
+    afterEach(() => {
+        consoleSpy.mockClear()
     });
 
     it('should be created', inject([LoggerService], (service: LoggerService) => {
@@ -20,9 +26,8 @@ describe('LoggerService', () => {
 
     it('should log, if environment is not silent', inject([LoggerService], (service: LoggerService) => {
             environment.silent = false;
-            const spy = jest.spyOn(global.console, 'log');
             service.log("Test", "Some message");
-            expect(spy).toHaveBeenCalled();
+            expect(consoleSpy).toHaveBeenCalled();
         })
     );
 
