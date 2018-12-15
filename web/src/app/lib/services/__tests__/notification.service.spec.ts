@@ -1,41 +1,19 @@
 import {inject, TestBed} from '@angular/core/testing';
-import {LoggerService} from '../logger.service';
-import {environment} from '../../../../environments/environment'
-//jest.mock('../../../../environments/environment');
+import {NotificationService} from '../notification.service';
 
-describe('LoggerService', () => {
-    let consoleSpy;
+describe('NotificationService', () => {
 
     beforeEach(() => {
-        consoleSpy = jest.spyOn(global.console, 'log');
         TestBed.configureTestingModule({
             providers: [
-                LoggerService,
+                NotificationService,
             ]
         });
     });
 
-    afterEach(() => {
-        consoleSpy.mockClear()
-    });
-
-    it('should be created', inject([LoggerService], (service: LoggerService) => {
+    it('should be created', inject([NotificationService], (service: NotificationService) => {
             expect(service).not.toBeNull();
         })
     );
 
-    it('should log, if environment is not silent', inject([LoggerService], (service: LoggerService) => {
-            environment.silent = false;
-            service.log("Test", "Some message");
-            expect(consoleSpy).toHaveBeenCalled();
-        })
-    );
-
-    it('should not log, if environment is silent', inject([LoggerService], (service: LoggerService) => {
-            environment.silent = true;
-            const spy = jest.spyOn(global.console, 'log');
-            service.log("Test", "Some message");
-            expect(spy).not.toHaveBeenCalled();
-        })
-    );
 });
