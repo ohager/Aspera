@@ -35,7 +35,7 @@ export class AccountService {
 
     constructor(
         private http: HttpClient,
-        private cryptoService: CryptoService,
+        //private cryptoService: CryptoService,
         private storeService: StoreService
     ) {
         this.storeService.settings.subscribe((settings: Settings) => {
@@ -100,7 +100,7 @@ export class AccountService {
             }
 
             let account: Account = new Account();
-            
+
             this.storeService.findAccount(BurstUtil.decode(address))
                 .then(found => {
                     if (found == undefined) {

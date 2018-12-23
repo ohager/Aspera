@@ -15,7 +15,7 @@ export class PassPhraseGenerator {
     private passPhrase: string;
 
     constructor() {
-        seedrandom();
+        //seedrandom();
         this.seed = [];
     }
 

@@ -31,7 +31,7 @@ export class AccountCreateSeedComponent implements OnInit {
     public movement(e) {
         this.seed.push([e.clientX, e.clientY, new Date()]);
         if (!this.update) {
-            this.update = true
+            this.update = true;
             setTimeout(() => {
                 this.progress = this.seed.length / this.seedLimit * 100;
                 this.update = false;

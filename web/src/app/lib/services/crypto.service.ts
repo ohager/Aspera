@@ -19,11 +19,7 @@ let pako = require('pako');
 */
 @Injectable()
 export class CryptoService {
-    private passPhraseGenerator: PassPhraseGenerator;
-
-    constructor() {
-        this.passPhraseGenerator = new PassPhraseGenerator();
-    }
+    constructor() {}
 
     /*
     * Generate a passphrase with the help of the PassPhraseGenerator
@@ -31,8 +27,9 @@ export class CryptoService {
     */
     public generatePassPhrase(seed: any[] = []): Promise<string[]> {
         return new Promise((resolve, reject) => {
-            this.passPhraseGenerator.reSeed(seed);
-            resolve(this.passPhraseGenerator.generatePassPhrase());
+            const ppg = new PassPhraseGenerator();
+            ppg.reSeed(seed);
+            resolve(ppg.generatePassPhrase());
         });
     }
 
