@@ -61,6 +61,7 @@ export class CryptoService {
     */
     public getAccountIdFromPublicKey(publicKey: string): Promise<string> {
         return new Promise((resolve, reject) => {
+            if (!(publicKey && publicKey.length)) { throw new Error('Invalid public key') }
             // hash with SHA 256
             let hash = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(publicKey));
             let bytes = Converter.convertWordArrayToByteArray(hash);
