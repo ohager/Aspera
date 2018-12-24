@@ -4,6 +4,10 @@
   "license": "MIT",
   "angular-cli": {},
   "private": true,
+  "engineStrict": true,
+  "engines": {
+    "node": ">=10.3.0"
+  },
   "scripts": {
     "start": "ng serve --proxy-config proxy.conf.json",
     "test": "jest --watch",
