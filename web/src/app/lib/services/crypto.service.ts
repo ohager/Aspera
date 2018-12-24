@@ -2,16 +2,14 @@
 * Copyright 2018 PoC-Consortium
 */
 
-import { Injectable } from '@angular/core';
-import { Converter } from "../util";
-import { PassPhraseGenerator, ECKCDSA } from "../util/crypto";
-import { Keys } from "../model";
-import { BurstUtil } from "../util";
-// FIXME: need to checkout why the import is causing problems... it has something to do with the huge word list...
-//import FullDictionary from "../util/crypto/passPhraseGenerator/fullDictionary";
-import Dictionary from "../util/crypto/passPhraseGenerator/dictionary";
+import {Inject, Injectable} from '@angular/core';
+import { Converter } from '../util';
+import { PassPhraseGenerator, ECKCDSA } from '../util/crypto';
+import { Keys } from '../model';
+import { BurstUtil } from '../util';
+import * as CryptoJS from 'crypto-js';
+import Dictionary, {DICTIONARY} from '../util/crypto/passPhraseGenerator/dictionary';
 
-let CryptoJS = require("crypto-js");
 let BN = require('bn.js');
 let pako = require('pako');
 
@@ -22,18 +20,20 @@ let pako = require('pako');
 */
 @Injectable()
 export class CryptoService {
-    constructor() {}
 
+    private passPhraseGenerator: PassPhraseGenerator;
+
+    constructor(@Inject(DICTIONARY) private dictionary: Dictionary ) {
+        this.passPhraseGenerator = new PassPhraseGenerator(dictionary);
+    }
     /*
     * Generate a passphrase with the help of the PassPhraseGenerator
     * pass optional seed for seeding generation
     */
-    public generatePassPhrase(seed: any[] = [],
-                              dictionary :  Dictionary): Promise<string[]> {
+    public generatePassPhrase(seed: any[] = []): Promise<string[]> {
         return new Promise((resolve, reject) => {
-            const ppg = new PassPhraseGenerator(dictionary);
-            ppg.reSeed(seed);
-            resolve(ppg.generatePassPhrase());
+            this.passPhraseGenerator.reSeed(seed);
+            resolve(this.passPhraseGenerator.generatePassPhrase());
         });
     }
 
@@ -48,9 +48,9 @@ export class CryptoService {
             // use ec-kcdsa to generate keys from passphrase
             let keys = ECKCDSA.keygen(Converter.convertWordArrayToByteArray(hashedPassPhrase));
             let keyObject: Keys = new Keys({
-                "publicKey": Converter.convertByteArrayToHexString(keys.p),
-                "signPrivateKey": Converter.convertByteArrayToHexString(keys.s),
-                "agreementPrivateKey": Converter.convertByteArrayToHexString(keys.k)
+                'agreementPrivateKey': Converter.convertByteArrayToHexString(keys.k),
+                'publicKey': Converter.convertByteArrayToHexString(keys.p),
+                'signPrivateKey': Converter.convertByteArrayToHexString(keys.s),
             });
             resolve(keyObject);
         });

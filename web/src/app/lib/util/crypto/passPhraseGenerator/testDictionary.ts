@@ -3,7 +3,9 @@
  * @see FullDictionary
  */
 import Dictionary from './dictionary';
+import {Injectable} from '@angular/core';
 
+@Injectable()
 export default class TestDictionary implements Dictionary {
     private static words: string[] = null;
 

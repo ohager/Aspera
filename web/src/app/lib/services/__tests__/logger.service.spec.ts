@@ -25,7 +25,7 @@ describe('LoggerService', () => {
 
     it('should log, if environment is not silent', inject([LoggerService], (service: LoggerService) => {
             environment.silent = false;
-            service.log("Test", "Some message");
+            service.log('Test', 'Some message');
             expect(consoleSpy).toHaveBeenCalled();
         })
     );
@@ -33,7 +33,7 @@ describe('LoggerService', () => {
     it('should not log, if environment is silent', inject([LoggerService], (service: LoggerService) => {
             environment.silent = true;
             const spy = jest.spyOn(global.console, 'log');
-            service.log("Test", "Some message");
+            service.log('Test', 'Some message');
             expect(spy).not.toHaveBeenCalled();
         })
     );

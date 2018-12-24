@@ -15,9 +15,14 @@ import {NotifierModule} from 'angular-notifier';
 import {App} from './app.component';
 // Main Routes
 import {routing} from './app.routing';
+
 // Classes and interfaces
+import {DICTIONARY} from './lib/util/crypto/passPhraseGenerator/dictionary';
+
+import FullDictionary from './lib/util/crypto/passPhraseGenerator/fullDictionary';
+
 // Configs
-import {appConfigFactory, StoreConfig} from "./lib/config/store.config";
+import {appConfigFactory, StoreConfig} from './lib/config/store.config';
 
 let modules = [
     BrowserModule,
@@ -43,7 +48,8 @@ let modules = [
         routing
     ],
     providers: [
-        {provide: StoreConfig, useFactory: appConfigFactory}
+        {provide: StoreConfig, useFactory: appConfigFactory},
+        {provide: DICTIONARY, useValue: new FullDictionary()},
     ]
 })
 
