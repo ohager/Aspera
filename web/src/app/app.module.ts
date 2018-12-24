@@ -1,19 +1,23 @@
 // external module
-import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
-import { RouterModule } from '@angular/router';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-
+import {BrowserModule} from '@angular/platform-browser';
+import {NgModule} from '@angular/core';
+import {FormsModule} from '@angular/forms';
+import {HttpClientModule} from '@angular/common/http';
+import {RouterModule} from '@angular/router';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 // our lib
-import { SharedModule } from './lib/shared.module';
-import { DashboardModule } from './pages/dashboard/dashboard.module';
-import { LoginModule } from './pages/login/login.module';
-
-import { environment } from '../environments/environment';
-import { TranslateModule } from '@ngx-translate/core';
-import { NotifierModule } from 'angular-notifier';
+import {SharedModule} from './lib/shared.module';
+import {DashboardModule} from './pages/dashboard/dashboard.module';
+import {LoginModule} from './pages/login/login.module';
+import {TranslateModule} from '@ngx-translate/core';
+import {NotifierModule} from 'angular-notifier';
+// Main App
+import {App} from './app.component';
+// Main Routes
+import {routing} from './app.routing';
+// Classes and interfaces
+// Configs
+import {appConfigFactory, StoreConfig} from "./lib/config/store.config";
 
 let modules = [
     BrowserModule,
@@ -28,14 +32,6 @@ let modules = [
     NotifierModule
 ];
 
-// Main App
-import { App } from './app.component';
-
-// Main Routes
-import { routing } from './app.routing';
-
-// Configs
-import {StoreConfig, appConfigFactory} from "./lib/config/store.config";
 
 @NgModule({
     bootstrap: [App],
@@ -47,8 +43,9 @@ import {StoreConfig, appConfigFactory} from "./lib/config/store.config";
         routing
     ],
     providers: [
-        { provide: StoreConfig, useFactory: appConfigFactory }
+        {provide: StoreConfig, useFactory: appConfigFactory}
     ]
 })
 
-export class AppModule { }
+export class AppModule {
+}

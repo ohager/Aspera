@@ -1,16 +1,17 @@
 import {CryptoService} from "../crypto.service";
+import TestDictionary from "../../util/crypto/passPhraseGenerator/testDictionary";
 
 describe('CryptoService', () => {
 
+    let service : CryptoService = new CryptoService();
+
     it('should be created', () => {
-        const service = new CryptoService();
         expect(service).not.toBeNull();
     });
-/*
+
     describe('generatePassphrase', () => {
         it('should generate a single nice passphrase (12 tokens)', async () => {
-            const service = new CryptoService();
-            const passphrase = await service.generatePassPhrase();
+            const passphrase = await service.generatePassPhrase([], new TestDictionary());
             expect(passphrase).not.toBeNull();
             expect(passphrase.length).toBe(12);
             // minimum expected lower bound
@@ -18,16 +19,13 @@ describe('CryptoService', () => {
         });
 
         it('should generate several different passphrases', async () => {
-            const service = new CryptoService();
-
             let passphrases = new Set();
             for(let i=0; i<10; ++i){
-                const passphraseTokens = await service.generatePassPhrase();
+                const passphraseTokens = await service.generatePassPhrase([], new TestDictionary());
                 const phrase = passphraseTokens.join('');
                 expect(passphrases.has(phrase)).toBeFalsy();
                 passphrases.add(phrase);
             }
         })
     })
-    */
 });

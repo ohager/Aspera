@@ -7,8 +7,6 @@ import {BehaviorSubject} from "rxjs/BehaviorSubject";
 import {Settings} from "../../model";
 import {AccountService} from "../account.service";
 
-
-
 describe('AccountService', () => {
 
     beforeEach(() => {
@@ -20,6 +18,7 @@ describe('AccountService', () => {
             imports: [HttpClientTestingModule],
             providers: [
                 AccountService,
+                // FIXME: the crypto service is causing memory probs.... need to find out how to deal with it
                 {provide: StoreService, useValue: storeServiceMock}
             ]
         });

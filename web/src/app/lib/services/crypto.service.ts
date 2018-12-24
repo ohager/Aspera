@@ -7,6 +7,8 @@ import { Converter } from "../util";
 import { PassPhraseGenerator, ECKCDSA } from "../util/crypto";
 import { Keys } from "../model";
 import { BurstUtil } from "../util";
+import FullDictionary from "../util/crypto/passPhraseGenerator/fullDictionary";
+import Dictionary from "../util/crypto/passPhraseGenerator/dictionary";
 
 let CryptoJS = require("crypto-js");
 let BN = require('bn.js');
@@ -19,15 +21,20 @@ let pako = require('pako');
 */
 @Injectable()
 export class CryptoService {
-    constructor() {}
+    constructor() {
+        console.log("CryptoService ctro")
+
+    }
 
     /*
     * Generate a passphrase with the help of the PassPhraseGenerator
     * pass optional seed for seeding generation
     */
-    public generatePassPhrase(seed: any[] = []): Promise<string[]> {
+    public generatePassPhrase(seed: any[] = [],
+                              dictionary :  Dictionary = new FullDictionary()): Promise<string[]> {
+        console.log("generatePassPhrase")
         return new Promise((resolve, reject) => {
-            const ppg = new PassPhraseGenerator();
+            const ppg = new PassPhraseGenerator(dictionary);
             ppg.reSeed(seed);
             resolve(ppg.generatePassPhrase());
         });
