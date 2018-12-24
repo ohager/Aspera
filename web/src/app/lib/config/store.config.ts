@@ -1,5 +1,5 @@
-import {constants} from "../model";
-import {LokiLocalStorageAdapter} from "lokijs" //loki-indexed-adapter.js";
+import {constants} from '../model';
+import {LokiLocalStorageAdapter} from 'lokijs' // loki-indexed-adapter.js";
 
 export class StoreConfig {
     public databaseName: string;

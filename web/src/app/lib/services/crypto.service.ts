@@ -7,7 +7,8 @@ import { Converter } from "../util";
 import { PassPhraseGenerator, ECKCDSA } from "../util/crypto";
 import { Keys } from "../model";
 import { BurstUtil } from "../util";
-import FullDictionary from "../util/crypto/passPhraseGenerator/fullDictionary";
+// FIXME: need to checkout why the import is causing problems... it has something to do with the huge word list...
+//import FullDictionary from "../util/crypto/passPhraseGenerator/fullDictionary";
 import Dictionary from "../util/crypto/passPhraseGenerator/dictionary";
 
 let CryptoJS = require("crypto-js");
@@ -21,18 +22,14 @@ let pako = require('pako');
 */
 @Injectable()
 export class CryptoService {
-    constructor() {
-        console.log("CryptoService ctro")
-
-    }
+    constructor() {}
 
     /*
     * Generate a passphrase with the help of the PassPhraseGenerator
     * pass optional seed for seeding generation
     */
     public generatePassPhrase(seed: any[] = [],
-                              dictionary :  Dictionary = new FullDictionary()): Promise<string[]> {
-        console.log("generatePassPhrase")
+                              dictionary :  Dictionary): Promise<string[]> {
         return new Promise((resolve, reject) => {
             const ppg = new PassPhraseGenerator(dictionary);
             ppg.reSeed(seed);

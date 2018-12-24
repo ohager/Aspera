@@ -1,9 +1,9 @@
-import {CryptoService} from "../crypto.service";
-import TestDictionary from "../../util/crypto/passPhraseGenerator/testDictionary";
+import {CryptoService} from '../crypto.service';
+import TestDictionary from '../../util/crypto/passPhraseGenerator/testDictionary';
 
 describe('CryptoService', () => {
 
-    let service : CryptoService = new CryptoService();
+    let service: CryptoService = new CryptoService();
 
     it('should be created', () => {
         expect(service).not.toBeNull();
@@ -20,7 +20,7 @@ describe('CryptoService', () => {
 
         it('should generate several different passphrases', async () => {
             let passphrases = new Set();
-            for(let i=0; i<10; ++i){
+            for (let i = 0; i < 10; ++i) {
                 const passphraseTokens = await service.generatePassPhrase([], new TestDictionary());
                 const phrase = passphraseTokens.join('');
                 expect(passphrases.has(phrase)).toBeFalsy();

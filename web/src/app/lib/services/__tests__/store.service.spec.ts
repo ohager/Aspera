@@ -1,8 +1,8 @@
 import {async, inject, TestBed} from '@angular/core/testing';
 
 import {StoreService} from '../store.service';
-import {StoreConfig, testConfigFactory} from "../../config/store.config";
-import {Settings} from "../../model";
+import {StoreConfig, testConfigFactory} from '../../config/store.config';
+import {Settings} from '../../model';
 
 describe('StoreService', () => {
 
