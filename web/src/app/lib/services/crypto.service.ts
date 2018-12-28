@@ -111,15 +111,13 @@ export class CryptoService {
     * Decrypt a derived hd private key with a given pin
     */
     public decryptAES(encryptedBase64: string, key: string): Promise<string> {
-        return new Promise((resolve, reject) => {
-            let decrypted = CryptoJS.AES.decrypt(encryptedBase64, key);
-            resolve(decrypted.toString(CryptoJS.enc.Utf8));
-        });
+        return Promise.resolve(CryptoJS.AES.decrypt(encryptedBase64, key).toString(CryptoJS.enc.Utf8));
     }
 
     /*
     * Encrypt a message attached to a transaction
     */
+    // TODO: introduce an output model, apply async/await
     public encryptMessage(message: string, encryptedPrivateKey: string, pinHash: string, recipientPublicKey: string): Promise<any> {
         return new Promise((resolve, reject) => {
             this.decryptAES(encryptedPrivateKey, pinHash)
@@ -166,13 +164,13 @@ export class CryptoService {
                             Converter.convertHexStringToByteArray(senderPublicKey)
                         );
                     // convert nonce to uint8array
-                    let nonce_array = Converter.convertWordArrayToUint8Array(CryptoJS.enc.Hex.parse(nonce));
+                    let nonceArray = Converter.convertWordArrayToUint8Array(CryptoJS.enc.Hex.parse(nonce));
                     // combine
                     for (let i = 0; i < 32; i++) {
-                        sharedKey[i] ^= nonce_array[i];
+                        sharedKey[i] ^= nonceArray[i];
                     }
                     // hash shared key
-                    let key = CryptoJS.SHA256(Converter.convertByteArrayToWordArray(sharedKey))
+                    let key = CryptoJS.SHA256(Converter.convertByteArrayToWordArray(sharedKey));
                     // convert message hex back to base 64 due to limitation of node
                     let messageB64 = CryptoJS.enc.Hex.parse(encryptedMessage).toString(CryptoJS.enc.Base64);
                     // DECRYPT

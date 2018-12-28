@@ -1,7 +1,11 @@
+import * as CryptoJS from 'crypto-js';
+
 import {CryptoService} from '../crypto.service';
 import TestDictionary from '../../util/crypto/passPhraseGenerator/testDictionary';
 import {async, inject, TestBed} from '@angular/core/testing';
 import {DICTIONARY} from '../../util/crypto/passPhraseGenerator/dictionary';
+import {ECKCDSA} from '../../util/crypto';
+import {Converter} from '../../util';
 
 
 const withCryptoService = (asyncFn) => async(inject([CryptoService], asyncFn));
@@ -117,18 +121,53 @@ describe('CryptoService', () => {
         )
     }); // encryptAES/decryptAES
 
-    describe('encryptMessage', () => {
+    describe('encryptMessage/decryptMessage', () => {
         it('should encrypt message as expected',
             withCryptoService(async (service: CryptoService) => {
+                const pinHash = 'pinHash';
+                const privateKey = 'edc23425f6281aeffe87431ffefa57af28c4df6f30b293e3db4631d11cc1c076'; // random key
+                const message = 'message to be encrypted sfsfdff';
+                const encryptedPrivateKey = await service.encryptAES(privateKey, pinHash);
+
                 const encryptedMessage = await service.encryptMessage(
-                    'message to be encrypted',
-                    'encryptedPrivateKey',
-                    '1234567',
+                    message,
+                    encryptedPrivateKey,
+                    pinHash,
                     'recipientPublicKey'
                 );
-                expect(encryptedMessage).not.toBeNull()
+                expect(encryptedMessage).not.toBeNull();
+                expect(encryptedMessage.m).not.toBeNull();
+                expect(encryptedMessage.m.length).toBeGreaterThan(0);
+                expect(encryptedMessage.m.length % 32).toBe(0);
+                expect(encryptedMessage.m).not.toBe(message);
+                expect(encryptedMessage.n).not.toBeNull();
+                expect(encryptedMessage.n.length).toBe(64);
+            })
+        );
+
+        xit('should decrypt message as expected',
+            withCryptoService(async (service: CryptoService) => {
+                // FIXME: check out how to do this
             })
         )
-    }); // encryptMessage
+    }); // encryptMessage/decryptMessage
+
+    describe('generateSignature', () => {
+        it('should generate signature as expected',
+            withCryptoService(async (service: CryptoService) => {
+                const pinHash = 'pinHash';
+                const transactionHex = 'edc23425f6281aeffe87431ffefa57af28c4df6f30b293e3db4631d11cc1c076';
+                const encryptedPrivateKey = await service.encryptAES('privateKey', pinHash);
+
+                const signature = await service.generateSignature(
+                    transactionHex,
+                    encryptedPrivateKey,
+                    pinHash,
+                );
+                expect(signature).not.toBeNull();
+                expect(signature.length).toBe(128);
+            })
+        );
+    });
 
 });
