@@ -2,10 +2,13 @@ import {inject, TestBed} from '@angular/core/testing';
 import {HttpClientTestingModule} from '@angular/common/http/testing';
 
 import {StoreService} from '../store.service';
-import {testConfigFactory} from "../../config/store.config";
-import {BehaviorSubject} from "rxjs/BehaviorSubject";
-import {Settings} from "../../model";
-import {AccountService} from "../account.service";
+import {testConfigFactory} from '../../config/store.config';
+import {BehaviorSubject} from 'rxjs/BehaviorSubject';
+import {Settings} from '../../model';
+import {AccountService} from '../account.service';
+import {CryptoService} from '../crypto.service';
+import {DICTIONARY} from '../../util/crypto/passPhraseGenerator/dictionary';
+import TestDictionary from '../../util/crypto/passPhraseGenerator/testDictionary';
 
 describe('AccountService', () => {
 
@@ -17,8 +20,9 @@ describe('AccountService', () => {
         TestBed.configureTestingModule({
             imports: [HttpClientTestingModule],
             providers: [
+                {provide: DICTIONARY, useValue: new TestDictionary()},
+                CryptoService,
                 AccountService,
-                // FIXME: the crypto service is causing memory probs.... need to find out how to deal with it
                 {provide: StoreService, useValue: storeServiceMock}
             ]
         });

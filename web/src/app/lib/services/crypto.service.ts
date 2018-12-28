@@ -3,10 +3,10 @@
 */
 
 import {Inject, Injectable} from '@angular/core';
-import { Converter } from '../util';
-import { PassPhraseGenerator, ECKCDSA } from '../util/crypto';
-import { Keys } from '../model';
-import { BurstUtil } from '../util';
+import {Converter} from '../util';
+import {PassPhraseGenerator, ECKCDSA} from '../util/crypto';
+import {Keys} from '../model';
+import {BurstUtil} from '../util';
 import * as CryptoJS from 'crypto-js';
 import Dictionary, {DICTIONARY} from '../util/crypto/passPhraseGenerator/dictionary';
 
@@ -23,9 +23,10 @@ export class CryptoService {
 
     private passPhraseGenerator: PassPhraseGenerator;
 
-    constructor(@Inject(DICTIONARY) private dictionary: Dictionary ) {
+    constructor(@Inject(DICTIONARY) private dictionary: Dictionary) {
         this.passPhraseGenerator = new PassPhraseGenerator(dictionary);
     }
+
     /*
     * Generate a passphrase with the help of the PassPhraseGenerator
     * pass optional seed for seeding generation
@@ -61,7 +62,9 @@ export class CryptoService {
     */
     public getAccountIdFromPublicKey(publicKey: string): Promise<string> {
         return new Promise((resolve, reject) => {
-            if (!(publicKey && publicKey.length)) { throw new Error('Invalid public key') }
+            if (!(publicKey && publicKey.length)) {
+                throw new Error('Invalid public key')
+            }
             // hash with SHA 256
             let hash = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(publicKey));
             let bytes = Converter.convertWordArrayToByteArray(hash);
@@ -101,11 +104,9 @@ export class CryptoService {
     * Encrypt a derived hd private key with a given pin and return it in Base64 form
     */
     public encryptAES(text: string, key: string): Promise<string> {
-        return new Promise((resolve, reject) => {
-            let encrypted = CryptoJS.AES.encrypt(text, key);
-            resolve(encrypted.toString()); // Base 64
-        });
+        return Promise.resolve(CryptoJS.AES.encrypt(text, key).toString())
     }
+
     /*
     * Decrypt a derived hd private key with a given pin
     */
@@ -130,11 +131,11 @@ export class CryptoService {
                             Converter.convertHexStringToByteArray(recipientPublicKey)
                         );
                     // Create random nonce
-                    let random_bytes = CryptoJS.lib.WordArray.random(32);
-                    let r_nonce = Converter.convertWordArrayToUint8Array(random_bytes);
+                    let randomBytes = CryptoJS.lib.WordArray.random(32);
+                    let rNonce = Converter.convertWordArrayToUint8Array(randomBytes);
                     // combine
                     for (let i = 0; i < 32; i++) {
-                        sharedKey[i] ^= r_nonce[i];
+                        sharedKey[i] ^= rNonce[i];
                     }
                     // hash shared key
                     let key = CryptoJS.SHA256(Converter.convertByteArrayToWordArray(sharedKey));
@@ -142,11 +143,11 @@ export class CryptoService {
                     let iv = CryptoJS.lib.WordArray.random(16);
                     let messageB64 = CryptoJS.AES.encrypt(message, key.toString(), {iv: iv}).toString();
                     // convert base 64 to hex due to node limitation
-                    let messageHex = iv.toString(CryptoJS.enc.Hex) + CryptoJS.enc.Base64.parse(messageB64).toString(CryptoJS.enc.Hex);
+                    let messageHex = iv.toString() + CryptoJS.enc.Base64.parse(messageB64).toString(CryptoJS.enc.Hex);
                     // Uint 8 to hex
-                    let nonce = random_bytes.toString(CryptoJS.enc.Hex);
+                    let nonce = randomBytes.toString();
                     // return encrypted pair
-                    resolve({ m: messageHex, n: nonce })
+                    resolve({m: messageHex, n: nonce})
                 })
         })
     }

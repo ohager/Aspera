@@ -2,22 +2,22 @@
 * Copyright 2018 PoC-Consortium
 */
 
-import { Injectable } from "@angular/core";
-import { RequestOptions, Response } from "@angular/http";
+import { Injectable } from '@angular/core';
+import { RequestOptions, Response } from '@angular/http';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import 'rxjs/add/operator/toPromise';
 import 'rxjs/add/operator/timeout'
 
-import { Account, Currency, EncryptedMessage, HttpError, Keys, Message, Settings, Transaction, constants } from "../model";
-import { NoConnectionError, UnknownAccountError } from "../model/error";
-import { BurstUtil } from "../util"
-import { CryptoService } from "./crypto.service";
-import { NotificationService} from "./notification.service";
-import { StoreService } from "./store.service";
-import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";
-import { Observable } from "rxjs";
-import { fromPromise } from "rxjs/internal-compatibility";
-import { tap } from "rxjs/operators";
+import { Account, Currency, EncryptedMessage, HttpError, Keys, Message, Settings, Transaction, constants } from '../model';
+import { NoConnectionError, UnknownAccountError } from '../model/error';
+import { BurstUtil } from '../util'
+import { CryptoService } from './crypto.service';
+import { NotificationService} from './notification.service';
+import { StoreService } from './store.service';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { fromPromise } from 'rxjs/internal-compatibility';
+import { tap } from 'rxjs/operators';
 
 /*
 * AccountService class
@@ -35,7 +35,7 @@ export class AccountService {
 
     constructor(
         private http: HttpClient,
-        //private cryptoService: CryptoService,
+        private cryptoService: CryptoService,
         private storeService: StoreService
     ) {
         this.storeService.settings.subscribe((settings: Settings) => {
@@ -53,11 +53,11 @@ export class AccountService {
     * Generates keys for an account, encrypts them with the provided key and saves them.
     * TODO: error handling of asynchronous method calls
     */
-    public createActiveAccount({passphrase, pin = ""}): Promise<Account> {
+    public createActiveAccount({passphrase, pin = ''}): Promise<Account> {
         return new Promise((resolve, reject) => {
             let account: Account = new Account();
             // import active account
-            account.type = "active";
+            account.type = 'active';
             return this.cryptoService.generateMasterKeys(passphrase)
                 .then(keys => {
                     let newKeys = new Keys();
@@ -96,7 +96,7 @@ export class AccountService {
         return new Promise((resolve, reject) => {
 
             if (!BurstUtil.isValid(address)) {
-                reject("Invalid Burst Address");
+                reject('Invalid Burst Address');
             }
 
             let account: Account = new Account();
@@ -105,7 +105,7 @@ export class AccountService {
                 .then(found => {
                     if (found == undefined) {
                         // import offline account
-                        account.type = "offline";
+                        account.type = 'offline';
                         account.address = address;
                         return this.cryptoService.getAccountIdFromBurstAddress(address)
                             .then(id => {
@@ -116,7 +116,7 @@ export class AccountService {
                                     });
                             });
                     } else {
-                        reject("Burstcoin address already imported!");
+                        reject('Burstcoin address already imported!');
                     }
                 })
         });
@@ -140,7 +140,7 @@ export class AccountService {
                                     newKeys.agreementPrivateKey = encryptedKey;
                                     account.keys = newKeys;
                                     account.pinHash = this.hashPinStorage(pin, keys.publicKey);
-                                    account.type = "active";
+                                    account.type = 'active';
                                     return this.storeService.saveAccount(account)
                                         .then(account => {
                                             resolve(account);
@@ -182,7 +182,7 @@ export class AccountService {
                                 .then(transactions => {
                                     account.transactions = transactions.concat(account.transactions);
                                     this.storeService.saveAccount(account)
-                                        .catch(error => { console.log("Failed saving the account!"); })
+                                        .catch(error => { console.log('Failed saving the account!'); })
                                     resolve(account);
                                 }).catch(error => reject(error))
                         }).catch(error => reject(error))
@@ -210,10 +210,10 @@ export class AccountService {
     public getTransactions(id: string): Promise<Transaction[]> {
         return new Promise((resolve, reject) => {
             let params: HttpParams = new HttpParams()
-                .set("requestType", "getAccountTransactions")
-                .set("firstIndex", "0")
-                .set("lastIndex", constants.transactionCount)
-                .set("account", id);
+                .set('requestType', 'getAccountTransactions')
+                .set('firstIndex', '0')
+                .set('lastIndex', constants.transactionCount)
+                .set('account', id);
 
             let requestOptions = BurstUtil.getRequestOptions();
             requestOptions.params = params;
@@ -232,7 +232,7 @@ export class AccountService {
                     });
                     return resolve(transactions);
                 })
-                .catch(error => {console.log(error);reject(new NoConnectionError())});
+                .catch(error => {console.log(error); reject(new NoConnectionError())});
         });
     }
 
@@ -242,8 +242,8 @@ export class AccountService {
     public getUnconfirmedTransactions(id: string): Promise<Transaction[]> {
         return new Promise((resolve, reject) => {
             let params: HttpParams = new HttpParams()
-                .set("requestType", "getUnconfirmedTransactions")
-                .set("account", id);
+                .set('requestType', 'getUnconfirmedTransactions')
+                .set('account', id);
             let requestOptions = BurstUtil.getRequestOptions();
             requestOptions.params = params;
             return this.http.get(this.nodeUrl, requestOptions)
@@ -269,8 +269,8 @@ export class AccountService {
     public getTransaction(id: string): Promise<Transaction> {
         return new Promise((resolve, reject) => {
             let params: HttpParams = new HttpParams()
-                .set("requestType", "getTransaction")
-                .set("transaction", id);
+                .set('requestType', 'getTransaction')
+                .set('transaction', id);
             let requestOptions = BurstUtil.getRequestOptions();
             requestOptions.params = params;
             return this.http.get(this.nodeUrl, requestOptions)
@@ -289,8 +289,8 @@ export class AccountService {
     public getBalance(id: string): Promise<any> {
         return new Promise((resolve, reject) => {
             let params: HttpParams = new HttpParams()
-                .set("requestType", "getBalance")
-                .set("account", id);
+                .set('requestType', 'getBalance')
+                .set('account', id);
             let requestOptions = BurstUtil.getRequestOptions();
             requestOptions.params = params;
             return this.http.get(this.nodeUrl, requestOptions)
@@ -304,10 +304,10 @@ export class AccountService {
                         unconfirmedBalanceString = BurstUtil.convertStringToNumber(unconfirmedBalanceString);
                         resolve({ confirmed: parseFloat(balanceString), unconfirmed: parseFloat(unconfirmedBalanceString) });
                     } else {
-                        if (response.errorDescription == "Unknown account") {
+                        if (response.errorDescription == 'Unknown account') {
                             reject(new UnknownAccountError())
                         } else {
-                            reject(new Error("Failed fetching balance"));
+                            reject(new Error('Failed fetching balance'));
                         }
                     }
                 })
@@ -321,15 +321,15 @@ export class AccountService {
     public getAccountPublicKey(id: string): Promise<string> {
         return new Promise((resolve, reject) => {
             let params: HttpParams = new HttpParams()
-                .set("requestType", "getAccountPublicKey")
-                .set("account", id);
+                .set('requestType', 'getAccountPublicKey')
+                .set('account', id);
             let requestOptions = BurstUtil.getRequestOptions();
             requestOptions.params = params;
             return this.http.get(this.nodeUrl, requestOptions)
                 .timeout(constants.connectionTimeout)
                 .toPromise<any>() // todo
                 .then(response => {
-                    if (response.publicKey != undefined) {
+                    if (response.publicKey !== undefined) {
                         let publicKey = response.publicKey;
                         resolve(response.publicKey);
                     } else {
@@ -346,12 +346,12 @@ export class AccountService {
     public doTransaction(transaction: Transaction, encryptedPrivateKey: string, pin: string): Promise<Transaction> {
         return new Promise((resolve, reject) => {
             let params: HttpParams = new HttpParams()
-                .set("requestType", "sendMoney")
-                .set("amountNQT", BurstUtil.convertNumberToString(transaction.amountNQT))
-                .set("deadline", "1440") // todo
-                .set("feeNQT", BurstUtil.convertNumberToString(transaction.feeNQT))
-                .set("publicKey", transaction.senderPublicKey)
-                .set("recipient", transaction.recipientAddress);
+                .set('requestType', 'sendMoney')
+                .set('amountNQT', BurstUtil.convertNumberToString(transaction.amountNQT))
+                .set('deadline', '1440') // todo
+                .set('feeNQT', BurstUtil.convertNumberToString(transaction.feeNQT))
+                .set('publicKey', transaction.senderPublicKey)
+                .set('recipient', transaction.recipientAddress);
             if (transaction.attachment != undefined) {
                 params = this.constructAttachment(transaction, params);
             }
@@ -362,7 +362,7 @@ export class AccountService {
                 .timeout(constants.connectionTimeout)
                 .toPromise<any>() // todo
                 .then(this.postTransaction(resolve, reject, transaction, encryptedPrivateKey, pin))
-                .catch(error => { console.log(error); reject("Transaction error: Generating transaction. Check the recipient!") });
+                .catch(error => { console.log(error); reject('Transaction error: Generating transaction. Check the recipient!') });
         });
     }
 
@@ -374,11 +374,11 @@ export class AccountService {
         return new Promise((resolve, reject) => {
 
             let params: HttpParams = new HttpParams()
-                .set("requestType", "sendMessage")
-                .set("deadline", "1440") // todo
-                .set("feeNQT", BurstUtil.convertNumberToString(transaction.feeNQT))
-                .set("publicKey", transaction.senderPublicKey)
-                .set("recipient", transaction.recipientAddress);
+                .set('requestType', 'sendMessage')
+                .set('deadline', '1440') // todo
+                .set('feeNQT', BurstUtil.convertNumberToString(transaction.feeNQT))
+                .set('publicKey', transaction.senderPublicKey)
+                .set('recipient', transaction.recipientAddress);
 
             if (transaction.attachment != undefined) {
                 params = this.constructAttachment(transaction, params);
@@ -391,12 +391,12 @@ export class AccountService {
                 .timeout(constants.connectionTimeout)
                 .toPromise<any>() // todo
                 .then(this.postTransaction(resolve, reject, transaction, encryptedPrivateKey, pin))
-                .catch(error => { console.log(error); reject("Transaction error: Generating transaction. Check the recipient!") });
+                .catch(error => { console.log(error); reject('Transaction error: Generating transaction. Check the recipient!') });
         });
     }
 
     private postTransaction: any = (resolve, reject, transaction, encryptedPrivateKey, pin) => async (response) => {
-        if (response.unsignedTransactionBytes != undefined) {
+        if (response.unsignedTransactionBytes !== undefined) {
             // get unsigned transactionbytes
             const unsignedTransactionHex = response.unsignedTransactionBytes;
             // sign unsigned transaction bytes
@@ -405,8 +405,8 @@ export class AccountService {
             if (verified) {
                 const signedTransactionBytes = await this.cryptoService.generateSignedTransactionBytes(unsignedTransactionHex, signature);
                 const params = new HttpParams()
-                    .set("requestType", "broadcastTransaction")
-                    .set("transactionBytes", signedTransactionBytes);
+                    .set('requestType', 'broadcastTransaction')
+                    .set('transactionBytes', signedTransactionBytes);
                 let requestOptions = BurstUtil.getRequestOptions();
                 requestOptions.params = params;
                 // request 'broadcastTransaction' to burst node
@@ -415,8 +415,8 @@ export class AccountService {
                     .toPromise<any>() // todo
                     .then(response => {
                         const params = new HttpParams()
-                            .set("requestType", "getTransaction")
-                            .set("transaction", response.transaction);
+                            .set('requestType', 'getTransaction')
+                            .set('transaction', response.transaction);
                         requestOptions = BurstUtil.getRequestOptions();
                         requestOptions.params = params;
                         // request 'getTransaction' to burst node
@@ -426,29 +426,26 @@ export class AccountService {
                             .then(response => {
                                 resolve(new Transaction(response));
                             })
-                            .catch(error => reject("Transaction error: Finalizing transaction!"));
-                    }).catch(error => reject("Transaction error: Executing transaction!"));
+                            .catch(error => reject('Transaction error: Finalizing transaction!'));
+                    }).catch(error => reject('Transaction error: Executing transaction!'));
+            } else {
+                reject('Transaction error: Verifying signature!');
             }
-            else {
-                reject("Transaction error: Verifying signature!");
-            }
-        }
-        else {
-            reject("Transaction error: Generating transaction. Check the recipient!");
+        } else {
+            reject('Transaction error: Generating transaction. Check the recipient!');
         }
     };
 
     private constructAttachment(transaction: Transaction, params: HttpParams) {
-        if (transaction.attachment.type == "encrypted_message") {
+        if (transaction.attachment.type === 'encrypted_message') {
             let em: EncryptedMessage = <EncryptedMessage>transaction.attachment;
-            params = params.set("encryptedMessageData", em.data)
-                .set("encryptedMessageNonce", em.nonce)
-                .set("messageToEncryptIsText", String(em.isText));
-        }
-        else if (transaction.attachment.type == "message") {
+            params = params.set('encryptedMessageData', em.data)
+                .set('encryptedMessageNonce', em.nonce)
+                .set('messageToEncryptIsText', String(em.isText));
+        } else if (transaction.attachment.type == 'message') {
             let m: Message = <Message>transaction.attachment;
-            params = params.set("message", m.message)
-                .set("messageIsText", String(m.messageIsText));
+            params = params.set('message', m.message)
+                .set('messageIsText', String(m.messageIsText));
         }
         return params;
     }
@@ -457,7 +454,7 @@ export class AccountService {
         return new Promise((resolve, reject) => {
 
             let params: HttpParams = new HttpParams()
-                .set("requestType", sameAmount ? "sendMoneyMultiSame" : "sendMoneyMulti")
+                .set('requestType', sameAmount ? 'sendMoneyMultiSame' : 'sendMoneyMulti')
                 .set('feeNQT', transaction.feeNQT.toString())
                 .set('deadline', transaction.deadline)
                 .set('recipients', transaction.recipients)
@@ -474,11 +471,11 @@ export class AccountService {
                 .timeout(constants.connectionTimeout)
                 .toPromise<any>() // todo
                 .then(this.postTransaction(resolve, reject, transaction, encryptedPrivateKey, pin))
-                .catch(error => { console.log(error); reject("Transaction error: Generating transaction. Check the recipient!") });
+                .catch(error => { console.log(error); reject('Transaction error: Generating transaction. Check the recipient!') });
         });
     }
 
-    handleIncomingTransactions(transactions: Transaction[]) {
+    public handleIncomingTransactions(transactions: Transaction[]) {
         console.log(`NEW TRANSACTIONS FOUND`, transactions); // todo
     }
 

@@ -1,2 +1,2 @@
-export * from "./passPhraseGenerator/passPhraseGenerator";
-export * from "./ec-kcdsa";
+export * from './passPhraseGenerator/passPhraseGenerator';
+export * from './ec-kcdsa';
