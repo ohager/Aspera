@@ -2,7 +2,6 @@ import {CryptoService} from '../crypto.service';
 import TestDictionary from '../../util/crypto/passPhraseGenerator/testDictionary';
 import {async, inject, TestBed} from '@angular/core/testing';
 import {DICTIONARY} from '../../util/crypto/passPhraseGenerator/dictionary';
-import {Keys} from '../../model';
 
 
 const withCryptoService = (asyncFn) => async(inject([CryptoService], asyncFn));
@@ -200,7 +199,7 @@ describe('CryptoService', () => {
         )
     }); // encryptMessage/decryptMessage
 
-    describe('generateSignature', () => {
+    describe('generateSignature/verifySignature', () => {
         it('should generate signature as expected',
             withCryptoService(async (service: CryptoService) => {
                 const pinHash = 'pinHash';
@@ -214,6 +213,30 @@ describe('CryptoService', () => {
                 );
                 expect(signature).not.toBeNull();
                 expect(signature.length).toBe(128);
+            })
+        );
+        xit('should verify signature as expected',
+            withCryptoService(async (service: CryptoService) => {
+                // FIXME: how to test?
+            })
+        );
+    });
+
+    describe('generateSignedTransactionBytes', () => {
+        it('should generate expected',
+            withCryptoService(async (service: CryptoService) => {
+                const pinHash = 'pinHash';
+                const transactionHex = 'edc23425f6281aeffe87431ffefa57af28c4df6f30b293e3db4631d11cc1c076';
+                const encryptedPrivateKey = await CryptoService.encryptAES('privateKey', pinHash);
+                const signature = await service.generateSignature(
+                    transactionHex,
+                    encryptedPrivateKey,
+                    pinHash,
+                );
+
+                const bytes = await service.generateSignedTransactionBytes(transactionHex, signature);
+                expect(bytes).not.toBeNull();
+                expect(bytes.length).toBe(192);
             })
         );
     });

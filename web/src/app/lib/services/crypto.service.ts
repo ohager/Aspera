@@ -237,13 +237,14 @@ export class CryptoService {
             let h1hex = Converter.convertByteArrayToHexString(h1);
             let h2hex = Converter.convertByteArrayToHexString(h2);
             // compare
-            resolve(h1hex == h2hex);
+            resolve(h1hex === h2hex);
         });
     }
 
     /*
     * Concat signature with transactionHex
     */
+    // TODO: need more context on this one here! - maybe unnecessary
     public generateSignedTransactionBytes(unsignedTransactionHex: string, signature: string): Promise<string> {
         return new Promise((resolve, reject) => {
             // TODO: verification - duplicate?
