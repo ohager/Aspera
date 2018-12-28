@@ -66,7 +66,7 @@ describe('CryptoService', () => {
         it('should generate master keys',
             withCryptoService(async (service: CryptoService) => {
                 const keys = await service.generateMasterKeys('test passphrase');
-                const { agreementPrivateKey, publicKey, signPrivateKey } = keys;
+                const {agreementPrivateKey, publicKey, signPrivateKey} = keys;
                 expect(agreementPrivateKey).not.toBeNull();
                 expect(agreementPrivateKey.length).toBe(64);
                 expect(publicKey).not.toBeNull();
@@ -237,6 +237,18 @@ describe('CryptoService', () => {
                 const bytes = await service.generateSignedTransactionBytes(transactionHex, signature);
                 expect(bytes).not.toBeNull();
                 expect(bytes.length).toBe(192);
+            })
+        );
+    });
+
+    describe('hashSHA256', () => {
+        it('should generate SHA256 as expected',
+            inject([CryptoService], (service: CryptoService) => {
+
+                const hash = CryptoService.hashSHA256('foobar');
+
+                expect(hash).not.toBeNull();
+                expect(hash).toBe('c3ab8ff13720e8ad9047dd39466b3c8974e592c2fa383d4a3960714caef0c4f2');
             })
         );
     });

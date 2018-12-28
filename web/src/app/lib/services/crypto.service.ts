@@ -47,6 +47,14 @@ export class CryptoService {
         return Promise.resolve(CryptoJS.AES.decrypt(encryptedBase64, key).toString(CryptoJS.enc.Utf8));
     }
 
+    /*
+    * Hash string into hex string
+    */
+    public static hashSHA256(input: string): string {
+        // FIXME: make this async, to be consistent
+        return CryptoJS.SHA256(input).toString();
+    }
+
     constructor(@Inject(DICTIONARY) private dictionary: Dictionary) {
         this.passPhraseGenerator = new PassPhraseGenerator(dictionary);
     }
@@ -184,12 +192,6 @@ export class CryptoService {
         })
     }
 
-    /*
-    * Hash string into hex string
-    */
-    public hashSHA256(input: string): string {
-        return CryptoJS.SHA256(input).toString();
-    }
 
     /*
     * Generate signature for transaction

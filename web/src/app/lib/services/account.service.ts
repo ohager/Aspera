@@ -490,18 +490,14 @@ export class AccountService {
     * Method responsible for hashing the PIN to carry out an ecryption.
     */
     public hashPinEncryption(pin: string): string {
-        // todo: make this work?
-        // if (this.currentAccount.value) {
-        //     pin = pin + this.currentAccount.value.id;
-        // }
-        return this.cryptoService.hashSHA256(pin);
+        return CryptoService.hashSHA256(pin);
     }
 
     /*
     * Method responsible for hashing the PIN for saving it into the database.
     */
     public hashPinStorage(pin: string, publicKey: string): string {
-        return this.cryptoService.hashSHA256(pin + publicKey);
+        return CryptoService.hashSHA256(pin + publicKey);
     }
 
     /*
