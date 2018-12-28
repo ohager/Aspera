@@ -1,11 +1,10 @@
-import { HttpHeaders } from "@angular/common/http";
-import { HttpError } from "../model";
-
 /*
 * Copyright 2018 PoC-Consortium
 */
+import * as BN from 'bn.js';
+import { HttpHeaders } from '@angular/common/http';
+import { HttpError } from '../model';
 
-let BN = require('bn.js');
 
 /*
 * BurstUtil class
@@ -21,12 +20,16 @@ export class BurstUtil {
     private static readonly alphabet: string[] = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ'.split('');
     private static readonly base32Length = 13;
 
+    public static burstAddressPattern = {
+        '_': { pattern: new RegExp('\[a-zA-Z0-9\]')}
+    };
+
     private static ginv(a) {
         return BurstUtil.gexp[31 - BurstUtil.glog[a]];
     }
 
     private static gmult(a, b) {
-        if (a == 0 || b == 0) {
+        if (a === 0 || b === 0) {
             return 0;
         }
 
@@ -52,8 +55,7 @@ export class BurstUtil {
 
         let digit32 = 0,
             newLength = 0;
-        do // base 10 to base 32 conversion
-        {
+        do {
             digit32 = 0;
             newLength = 0;
             for (let i = 0; i < length; i++) {
@@ -95,7 +97,7 @@ export class BurstUtil {
         for (let i = 0; i < 17; i++) {
             out += BurstUtil.alphabet[codeword[BurstUtil.cwmap[i]]];
 
-            if ((i & 3) == 3 && i < 13) out += '-';
+            if ((i & 3) == 3 && i < 13) { out += '-'; }
         }
 
         return out;
@@ -106,7 +108,7 @@ export class BurstUtil {
     */
     public static decode(address: string): string {
         // remove Burst prefix
-        if (address.indexOf('BURST-') == 0) {
+        if (address.indexOf('BURST-') === 0) {
             address = address.substr(6);
         } else {
             return undefined;
@@ -141,7 +143,7 @@ export class BurstUtil {
             cypherString32[i] = codeword[length - i - 1];
         }
 
-        let out: string = "",
+        let out = '',
             newLength,
             digit10 = 0
         do { // base 32 to base 10 conversion
@@ -164,7 +166,7 @@ export class BurstUtil {
             out += digit10;
         } while (length > 0);
 
-        return new BN(out.split("").reverse().join("")).toString();
+        return new BN(out.split('').reverse().join('')).toString();
     }
 
     /*
@@ -226,7 +228,7 @@ export class BurstUtil {
     * Split the Burst address string into an array of 4 parts
     */
     public static splitBurstAddress(address: string): string[] {
-        let parts: string[] = address.split("-")
+        let parts: string[] = address.split('-')
         parts.shift()
         if (parts.length == 4) {
             return parts
@@ -239,19 +241,15 @@ export class BurstUtil {
     * Construct a Burst address from a string array
     */
     public static constructBurstAddress(parts: string[]): string {
-        return "BURST-" + parts[0] + "-" + parts[1] + "-" + parts[2] + "-" + parts[3];
+        return 'BURST-' + parts[0] + '-' + parts[1] + '-' + parts[2] + '-' + parts[3];
     }
 
-    /* 
+    /*
     * Validation Check. Quick validation of Burst addresses included
     */
     public static isBurstcoinAddress(address: string): boolean {
         return /^BURST\-[A-Z0-9]{4}\-[A-Z0-9]{4}\-[A-Z0-9]{4}\-[A-Z0-9]{5}/i.test(address) && BurstUtil.isValid(address);
     }
-
-    public static burstAddressPattern = {
-        '_': { pattern: new RegExp('\[a-zA-Z0-9\]')}
-    };
 
     /*
     * Helper method to construct request options
@@ -261,22 +259,22 @@ export class BurstUtil {
         return { headers: headers };
     }
 
-    /*
-    * Helper method to handle HTTP error
-    */
-    private handleError(error: Response | any) {
-        return Promise.reject(new HttpError(error));
-    }
-
     public static convertStringToNumber(amount: string) {
-        return parseFloat(amount)/100000000;
+        return parseFloat(amount) / 100000000;
     }
 
     /*
     * Helper method to Number to String(8 decimals) representation
     */
     public static convertNumberToString(n: number) {
-        return parseFloat(n.toString()).toFixed(8).replace(".", "");
+        return parseFloat(n.toString()).toFixed(8).replace('.', '');
+    }
+
+    /*
+    * Helper method to handle HTTP error
+    */
+    private handleError(error: Response | any) {
+        return Promise.reject(new HttpError(error));
     }
 
 }

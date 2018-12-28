@@ -1,11 +1,8 @@
-import * as CryptoJS from 'crypto-js';
-
 import {CryptoService} from '../crypto.service';
 import TestDictionary from '../../util/crypto/passPhraseGenerator/testDictionary';
 import {async, inject, TestBed} from '@angular/core/testing';
 import {DICTIONARY} from '../../util/crypto/passPhraseGenerator/dictionary';
-import {ECKCDSA} from '../../util/crypto';
-import {Converter} from '../../util';
+import {Keys} from '../../model';
 
 
 const withCryptoService = (asyncFn) => async(inject([CryptoService], asyncFn));
@@ -66,6 +63,25 @@ describe('CryptoService', () => {
         );
     }); // generatePassPhrase
 
+    describe('generateMasterKeys', () => {
+        it('should generate master keys',
+            withCryptoService(async (service: CryptoService) => {
+                const keys = await service.generateMasterKeys('test passphrase');
+                const { agreementPrivateKey, publicKey, signPrivateKey } = keys;
+                expect(agreementPrivateKey).not.toBeNull();
+                expect(agreementPrivateKey.length).toBe(64);
+                expect(publicKey).not.toBeNull();
+                expect(publicKey.length).toBe(64);
+                expect(publicKey).not.toBe(agreementPrivateKey);
+                expect(publicKey).not.toBe(signPrivateKey);
+                expect(signPrivateKey).not.toBeNull();
+                expect(signPrivateKey.length).toBe(64);
+                expect(signPrivateKey).not.toBe(agreementPrivateKey);
+
+            })
+        );
+    }); // generateMasterKeys
+
 
     describe('getAccountIdFromPublicKey', () => {
         it('should convert public key to account id',
@@ -101,10 +117,42 @@ describe('CryptoService', () => {
 
     }); // getBurstAddressFromAccountId
 
+    describe('getAccountIdFromBurstAddress', () => {
+        it('should convert BURST address to account id',
+            withCryptoService(async (service: CryptoService) => {
+                const burstAddress = await CryptoService.getAccountIdFromBurstAddress('BURST-TVW2-R9QA-VBYR-EUEUP');
+                expect(burstAddress).toBe('14621387788563312512') // test net account
+            })
+        );
+
+        it('should throw exception on invalid address #1',
+            withCryptoService(async (service: CryptoService) => {
+                try {
+                    await CryptoService.getAccountIdFromBurstAddress('TVW2-R9QA-VBYR-EUEUP');
+                    fail('Expected exception!');
+                } catch (e) {
+                    expect(e).toBe('Invalid BURST address: TVW2-R9QA-VBYR-EUEUP')
+                }
+            })
+        );
+
+        it('should throw exception on empty address #2',
+            withCryptoService(async (service: CryptoService) => {
+                try {
+                    await CryptoService.getAccountIdFromBurstAddress('');
+                    fail('Expected exception!');
+                } catch (e) {
+                    expect(e).toBe('Invalid BURST address: ')
+                }
+            })
+        );
+
+    }); // getBurstAddressFromAccountId
+
     describe('encryptAES/decryptAES', () => {
         it('should encrypt as expected',
             withCryptoService(async (service: CryptoService) => {
-                const encryptedBase64 = await service.encryptAES('test message', 'passphrase');
+                const encryptedBase64 = await CryptoService.encryptAES('test message', 'passphrase');
                 expect(encryptedBase64).not.toBeNull();
                 expect(encryptedBase64.length).toBeGreaterThan(0);
                 expect(() => atob(encryptedBase64)).not.toThrow();
@@ -114,8 +162,8 @@ describe('CryptoService', () => {
         );
         it('should decrypt as expected',
             withCryptoService(async (service: CryptoService) => {
-                const encryptedBase64 = await service.encryptAES('test message', 'passphrase');
-                const decrypted = await service.decryptAES(encryptedBase64, 'passphrase');
+                const encryptedBase64 = await CryptoService.encryptAES('test message', 'passphrase');
+                const decrypted = await CryptoService.decryptAES(encryptedBase64, 'passphrase');
                 expect(decrypted).toBe('test message');
             })
         )
@@ -127,7 +175,7 @@ describe('CryptoService', () => {
                 const pinHash = 'pinHash';
                 const privateKey = 'edc23425f6281aeffe87431ffefa57af28c4df6f30b293e3db4631d11cc1c076'; // random key
                 const message = 'message to be encrypted sfsfdff';
-                const encryptedPrivateKey = await service.encryptAES(privateKey, pinHash);
+                const encryptedPrivateKey = await CryptoService.encryptAES(privateKey, pinHash);
 
                 const encryptedMessage = await service.encryptMessage(
                     message,
@@ -157,7 +205,7 @@ describe('CryptoService', () => {
             withCryptoService(async (service: CryptoService) => {
                 const pinHash = 'pinHash';
                 const transactionHex = 'edc23425f6281aeffe87431ffefa57af28c4df6f30b293e3db4631d11cc1c076';
-                const encryptedPrivateKey = await service.encryptAES('privateKey', pinHash);
+                const encryptedPrivateKey = await CryptoService.encryptAES('privateKey', pinHash);
 
                 const signature = await service.generateSignature(
                     transactionHex,

@@ -12,9 +12,9 @@ export class Keys {
     public publicKey: string;
     public signPrivateKey: string;
 
-    constructor(data: any = {}) {
-        this.agreementPrivateKey = data.agreementPrivateKey || undefined;
-        this.publicKey = data.publicKey || undefined;
-        this.signPrivateKey = data.signPrivateKey || undefined;
+    constructor(publicKey: string, agreementPrivateKey: string, signPrivateKey: string) {
+        this.agreementPrivateKey = agreementPrivateKey;
+        this.publicKey = publicKey;
+        this.signPrivateKey = signPrivateKey;
     }
 }

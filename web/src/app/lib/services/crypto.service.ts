@@ -3,15 +3,13 @@
 */
 
 import {Inject, Injectable} from '@angular/core';
+import * as CryptoJS from 'crypto-js';
+import * as BN from 'bn.js';
 import {Converter} from '../util';
 import {PassPhraseGenerator, ECKCDSA} from '../util/crypto';
 import {Keys} from '../model';
 import {BurstUtil} from '../util';
-import * as CryptoJS from 'crypto-js';
 import Dictionary, {DICTIONARY} from '../util/crypto/passPhraseGenerator/dictionary';
-
-let BN = require('bn.js');
-let pako = require('pako');
 
 /*
 * CryptoService class
@@ -21,7 +19,33 @@ let pako = require('pako');
 @Injectable()
 export class CryptoService {
 
+
     private passPhraseGenerator: PassPhraseGenerator;
+
+    /**
+    * Convert Burst Address back to account id
+    */
+    public static getAccountIdFromBurstAddress(address: string): Promise<string> {
+        return new Promise((resolve, reject) => {
+            const id = BurstUtil.decode(address);
+            if (!id) { reject(`Invalid BURST address: ${address}`) }
+            resolve(id);
+        })
+    }
+
+    /**
+    * Encrypt a derived hd private key with a given pin and return it in Base64 form
+    */
+    public static encryptAES(text: string, key: string): Promise<string> {
+        return Promise.resolve(CryptoJS.AES.encrypt(text, key).toString())
+    }
+
+    /**
+    * Decrypt a derived hd private key with a given pin
+    */
+    public static decryptAES(encryptedBase64: string, key: string): Promise<string> {
+        return Promise.resolve(CryptoJS.AES.decrypt(encryptedBase64, key).toString(CryptoJS.enc.Utf8));
+    }
 
     constructor(@Inject(DICTIONARY) private dictionary: Dictionary) {
         this.passPhraseGenerator = new PassPhraseGenerator(dictionary);
@@ -44,15 +68,13 @@ export class CryptoService {
     */
     public generateMasterKeys(passPhrase: string): Promise<Keys> {
         return new Promise((resolve, reject) => {
-            // hash passphrase with sha256
             let hashedPassPhrase = CryptoJS.SHA256(passPhrase);
-            // use ec-kcdsa to generate keys from passphrase
             let keys = ECKCDSA.keygen(Converter.convertWordArrayToByteArray(hashedPassPhrase));
-            let keyObject: Keys = new Keys({
-                'agreementPrivateKey': Converter.convertByteArrayToHexString(keys.k),
-                'publicKey': Converter.convertByteArrayToHexString(keys.p),
-                'signPrivateKey': Converter.convertByteArrayToHexString(keys.s),
-            });
+            let keyObject: Keys = new Keys(
+                Converter.convertByteArrayToHexString(keys.p),
+                Converter.convertByteArrayToHexString(keys.k),
+                Converter.convertByteArrayToHexString(keys.s)
+            );
             resolve(keyObject);
         });
     }
@@ -91,36 +113,13 @@ export class CryptoService {
     }
 
     /*
-    * Convert Burst Address back to account id
-    */
-    public getAccountIdFromBurstAddress(address: string): Promise<string> {
-        return new Promise((resolve, reject) => {
-            // TODO: refactor shitty nxt address resolution
-            resolve(BurstUtil.decode(address));
-        });
-    }
-
-    /*
-    * Encrypt a derived hd private key with a given pin and return it in Base64 form
-    */
-    public encryptAES(text: string, key: string): Promise<string> {
-        return Promise.resolve(CryptoJS.AES.encrypt(text, key).toString())
-    }
-
-    /*
-    * Decrypt a derived hd private key with a given pin
-    */
-    public decryptAES(encryptedBase64: string, key: string): Promise<string> {
-        return Promise.resolve(CryptoJS.AES.decrypt(encryptedBase64, key).toString(CryptoJS.enc.Utf8));
-    }
-
-    /*
     * Encrypt a message attached to a transaction
     */
+
     // TODO: introduce an output model, apply async/await
     public encryptMessage(message: string, encryptedPrivateKey: string, pinHash: string, recipientPublicKey: string): Promise<any> {
         return new Promise((resolve, reject) => {
-            this.decryptAES(encryptedPrivateKey, pinHash)
+            CryptoService.decryptAES(encryptedPrivateKey, pinHash)
                 .then(privateKey => {
                     // generate shared key
                     let sharedKey =
@@ -153,9 +152,13 @@ export class CryptoService {
     /*
     * Decrypt a message attached to transaction
     */
-    public decryptMessage(encryptedMessage: string, nonce: string, encryptedPrivateKey: string, pinHash: string, senderPublicKey: string): Promise<any> {
+    public decryptMessage(encryptedMessage: string,
+                          nonce: string,
+                          encryptedPrivateKey: string,
+                          pinHash: string,
+                          senderPublicKey: string): Promise<any> {
         return new Promise((resolve, reject) => {
-            this.decryptAES(encryptedPrivateKey, pinHash)
+            CryptoService.decryptAES(encryptedPrivateKey, pinHash)
                 .then(privateKey => {
                     // generate shared key
                     let sharedKey =
@@ -197,7 +200,7 @@ export class CryptoService {
     */
     public generateSignature(transactionHex: string, encryptedPrivateKey: string, pinHash: string): Promise<string> {
         return new Promise((resolve, reject) => {
-            this.decryptAES(encryptedPrivateKey, pinHash)
+            CryptoService.decryptAES(encryptedPrivateKey, pinHash)
                 .then(privateKey => {
                     let s = Converter.convertHexStringToByteArray(privateKey);
                     let m = Converter.convertWordArrayToByteArray(CryptoJS.SHA256(CryptoJS.enc.Hex.parse(transactionHex)));

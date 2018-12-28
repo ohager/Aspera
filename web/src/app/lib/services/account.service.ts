@@ -62,10 +62,10 @@ export class AccountService {
                 .then(keys => {
                     let newKeys = new Keys();
                     newKeys.publicKey = keys.publicKey;
-                    return this.cryptoService.encryptAES(keys.signPrivateKey, this.hashPinEncryption(pin))
+                    return CryptoService.encryptAES(keys.signPrivateKey, this.hashPinEncryption(pin))
                         .then(encryptedKey => {
                             newKeys.signPrivateKey = encryptedKey;
-                            return this.cryptoService.encryptAES(keys.agreementPrivateKey, this.hashPinEncryption(pin))
+                            return CryptoService.encryptAES(keys.agreementPrivateKey, this.hashPinEncryption(pin))
                                 .then(encryptedKey => {
                                     newKeys.agreementPrivateKey = encryptedKey;
                                     account.keys = newKeys;
@@ -107,7 +107,7 @@ export class AccountService {
                         // import offline account
                         account.type = 'offline';
                         account.address = address;
-                        return this.cryptoService.getAccountIdFromBurstAddress(address)
+                        return CryptoService.getAccountIdFromBurstAddress(address)
                             .then(id => {
                                 account.id = id;
                                 return this.storeService.saveAccount(account)
@@ -132,10 +132,10 @@ export class AccountService {
                 .then(keys => {
                     let newKeys = new Keys();
                     newKeys.publicKey = keys.publicKey;
-                    return this.cryptoService.encryptAES(keys.signPrivateKey, this.hashPinEncryption(pin))
+                    return CryptoService.encryptAES(keys.signPrivateKey, this.hashPinEncryption(pin))
                         .then(encryptedKey => {
                             newKeys.signPrivateKey = encryptedKey;
-                            return this.cryptoService.encryptAES(keys.agreementPrivateKey, this.hashPinEncryption(pin))
+                            return CryptoService.encryptAES(keys.agreementPrivateKey, this.hashPinEncryption(pin))
                                 .then(encryptedKey => {
                                     newKeys.agreementPrivateKey = encryptedKey;
                                     account.keys = newKeys;
