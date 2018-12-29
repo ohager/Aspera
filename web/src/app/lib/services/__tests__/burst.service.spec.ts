@@ -63,6 +63,7 @@ describe('BurstService', () => {
 
         it('should return an error', (done) => {
                 inject([BurstService], (service: BurstService) => {
+                    // @ts-ignore
                     service.getBlockchainStatus().subscribe( ({status, message}) => {
                         expect(status).toBe(500);
                         expect(message).toBe('some test error');
