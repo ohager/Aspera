@@ -2,42 +2,40 @@
 * Copyright 2018 PoC-Consortium
 */
 
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import {Injectable} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
 import 'rxjs/add/operator/timeout'
 
-import { BurstNode, constants } from '../model';
-import { NoConnectionError } from '../model/error';
+import {BurstNode, constants} from '../model';
+import {NoConnectionError} from '../model/error';
+import {Observable} from 'rxjs';
 
-/*
-* NetworkService class
-*
-* Doing network stuff
-*/
+/**
+ * NetworkService class
+ *
+ * Doing network stuff
+ * @FIXME check its usage! it's not used yet - do we need this?
+ */
 @Injectable()
 export class NetworkService {
 
     constructor(
         private http: HttpClient
-    ) {}
+    ) {
+    }
 
-    public latency(node: BurstNode): Promise<number> {
-        return new Promise((resolve, reject) => {
-            let timeStart: number = performance.now();
-            return this.http.get(this.constructNodeUrl(node))
-            .timeout(constants.connectionTimeout)
+    public latency(node: BurstNode, timeout: number = constants.connectionTimeout): Promise<number> {
+        const timeStart: number = performance.now();
+        const url = node.toUrl();
+        return this.http.get(url)
+            .timeout(timeout)
             .toPromise()
             .then(response => {
                 let timeEnd: number = performance.now();
-                resolve(timeEnd - timeStart);
+                return (timeEnd - timeStart);
             }).catch(e => {
-                reject(new NoConnectionError('Connection timed out!'))
+                throw new NoConnectionError(`Connection [${url}] timed out!`)
             });
-        });
-    }
-
-    public constructNodeUrl(node: BurstNode): string {
-        return node.address + ':' + node.port + '/burst';
     }
 
 }
