@@ -26,6 +26,7 @@ export class BurstService {
         let requestOptions = BurstUtil.getRequestOptions();
         requestOptions.params = params;
 
+        console.log(this.nodeUrl);
         return this.httpService.get<BlockChainStatus | HttpError>(this.nodeUrl, requestOptions);
     }
 
@@ -44,6 +45,7 @@ export class BurstService {
        return this.httpService.get<Block | HttpError>(this.nodeUrl, requestOptions);
     }
 
+    // FIXME: wtf? - this is too large! - and seems to belong to i18n!
     public translateServerError(response) {
         let match = [];
         if (!response.errorDescription) {

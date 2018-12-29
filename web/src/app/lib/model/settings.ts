@@ -2,8 +2,8 @@
 * Copyright 2018 PoC-Consortium
 */
 
-import { constants } from "./constants";
-import { environment } from "../../../environments/environment";
+import { constants } from './constants';
+import { environment } from '../../../environments/environment';
 
 /*
 * Settings class
@@ -21,8 +21,8 @@ export class Settings {
     public marketUrl: string;
 
     constructor(data: any = {}) {
-        this.id = "settings";
-        if (data.contacts != undefined && data.contacts.length > 0) {
+        this.id = 'settings';
+        if (data.contacts !== undefined && data.contacts.length > 0) {
             this.contacts = data.contacts;
         } else {
             this.contacts = [];
