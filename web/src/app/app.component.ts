@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { StoreService, AccountService, BurstService } from './lib/services';
-import { GetBlockchainStatusResponse, Account, HttpError, Block } from './lib/model';
+import { BlockChainStatus, Account, HttpError, Block } from './lib/model';
 import { NotifierService } from 'angular-notifier';
 
 @Component( {
@@ -36,7 +36,7 @@ export class App {
 
     private checkBlockchainStatus(): (...args: any[]) => void {
         return () => {
-            this.burstService.getBlockchainStatus().subscribe((response: GetBlockchainStatusResponse | HttpError | any) => {
+            this.burstService.getBlockchainStatus().subscribe((response: BlockChainStatus | HttpError | any) => {
                 this.isScanning = !this.firstTime && (this.previousLastBlock != response.lastBlock);
                 this.previousLastBlock = response.lastBlock;
                 if (this.isScanning && !this.firstTime) {
