@@ -4,6 +4,7 @@ import {async, inject, TestBed} from '@angular/core/testing';
 import {DICTIONARY} from '../../util/crypto/passPhraseGenerator/dictionary';
 import {ECKCDSA} from '../../util/crypto';
 import {Converter} from '../../util';
+import CryptoJS = require('crypto-js');
 
 
 const withCryptoService = (asyncFn) => async(inject([CryptoService], asyncFn));
@@ -12,14 +13,32 @@ const withCryptoService = (asyncFn) => async(inject([CryptoService], asyncFn));
 describe('CryptoService', () => {
 
     const PHRASE_TOKEN_COUNT = 12;
+    let alicePublicKey: string;
+    let alicePrivateKeyEncrypted: string;
+    const alicePinHash = 'alicePinHash';
 
-    beforeEach(() => {
+    let bobPublicKey: string;
+    let bobPrivateKeyEncrypted: string;
+    const bobPinHash = 'bobPinHash';
+
+    beforeEach(async () => {
         TestBed.configureTestingModule({
             providers: [
                 CryptoService,
                 {provide: DICTIONARY, useValue: new TestDictionary()}
             ]
         });
+
+        const aliceKey = ECKCDSA.keygen('28c4df6f30b293e3db4631d11cc1c076'.split(''));
+        const alicePrivateKey = Converter.convertByteArrayToHexString(aliceKey.k);
+        alicePublicKey = Converter.convertByteArrayToHexString(aliceKey.p);
+        alicePrivateKeyEncrypted = await CryptoService.encryptAES(alicePrivateKey, alicePinHash);
+
+        const bobKey = ECKCDSA.keygen('edc23425f6281aeffe87431ffefa57af'.split(''));
+        const bobPrivateKey = Converter.convertByteArrayToHexString(bobKey.k);
+        bobPublicKey = Converter.convertByteArrayToHexString(bobKey.p);
+        bobPrivateKeyEncrypted = await CryptoService.encryptAES(bobPrivateKey, bobPinHash);
+
     });
 
     it('should be created', inject([CryptoService], (service: CryptoService) => {
@@ -173,100 +192,95 @@ describe('CryptoService', () => {
     describe('encryptMessage/decryptMessage', () => {
         it('should encrypt message as expected',
             withCryptoService(async (service: CryptoService) => {
-                const pinHash = 'pinHash';
-                const privateKey = 'edc23425f6281aeffe87431ffefa57af28c4df6f30b293e3db4631d11cc1c076'; // random key
-                const message = 'message to be encrypted';
-                const encryptedPrivateKey = await CryptoService.encryptAES(privateKey, pinHash);
-
+                // bob sends o alice
                 const encryptedMessage = await service.encryptMessage(
-                    message,
-                    encryptedPrivateKey,
-                    pinHash,
-                    'recipientPublicKey'
+                    'Message to be encrypted',
+                    alicePublicKey,
+                    bobPrivateKeyEncrypted,
+                    bobPinHash,
                 );
                 expect(encryptedMessage).not.toBeNull();
-                expect(encryptedMessage.m).not.toBeNull();
-                expect(encryptedMessage.m.length).toBeGreaterThan(0);
-                expect(encryptedMessage.m.length % 32).toBe(0);
-                expect(encryptedMessage.m).not.toBe(message);
-                expect(encryptedMessage.n).not.toBeNull();
-                expect(encryptedMessage.n.length).toBe(64);
+                expect(encryptedMessage.isText).toBeTruthy();
+                expect(encryptedMessage.data).not.toBeNull();
+                expect(encryptedMessage.data.length).toBeGreaterThan(0);
+                expect(encryptedMessage.nonce).not.toBeNull();
+                expect(encryptedMessage.nonce.length).toBeGreaterThan(0);
+                expect(() => CryptoJS.enc.Hex.parse(encryptedMessage.nonce)).not.toThrow();
+                const tokens = encryptedMessage.data.split(':');
+                expect(tokens.length).toBe(2);
+                expect(() => CryptoJS.enc.Base64.parse(tokens[0])).not.toThrow();
+                expect(() => CryptoJS.enc.Base64.parse(tokens[1])).not.toThrow();
             })
         );
 
-        xit('should decrypt message as expected',
+        it('should decrypt message as expected',
             withCryptoService(async (service: CryptoService) => {
 
-                const aliceKey = ECKCDSA.keygen('28c4df6f30b293e3db4631d11cc1c076'.split(''));
-                const alicePublicKey = await Converter.convertByteArrayToHexString(aliceKey.p);
-                const alicePrivateKeyEnc = await CryptoService.encryptAES(Converter.convertByteArrayToHexString(aliceKey.k), 'pinHashAlice');
-                const bobKey = ECKCDSA.keygen('edc23425f6281aeffe87431ffefa57af'.split(''));
-                const bobPublicKey = await Converter.convertByteArrayToHexString(bobKey.p);
-                const bobPrivateKeyEnc = await CryptoService.encryptAES(Converter.convertByteArrayToHexString(bobKey.k), 'pinHashBob');
-
-                // FIXME: there's some error in either encryption or decryption.
-                // this is how it would work
                 // bob sends message to alice
                 const encryptedMessage = await service.encryptMessage(
-                    'message',
-                    bobPrivateKeyEnc, 'pinHashBob',
-                    alicePublicKey
+                    'message to be encrypted',
+                    alicePublicKey,
+                    bobPrivateKeyEncrypted,
+                    bobPinHash
                 );
 
                 // alice reads message from bob
                 const message = await service.decryptMessage(
-                    encryptedMessage.m,
-                    encryptedMessage.n,
-                    alicePrivateKeyEnc,
-                    'pinHashAlice',
-                    bobPublicKey);
+                    encryptedMessage,
+                    bobPublicKey,
+                    alicePrivateKeyEncrypted,
+                    alicePinHash
+                );
 
-                expect(message).toBe('message');
+                expect(message).toBe('message to be encrypted');
             })
         );
 
-        it('should decrypt message as expected -dev',
+        it('should throw exception on malformed encrypted message ',
             withCryptoService(async (service: CryptoService) => {
 
                 const aliceKey = ECKCDSA.keygen('28c4df6f30b293e3db4631d11cc1c076'.split(''));
                 const alicePublicKey = Converter.convertByteArrayToHexString(aliceKey.p);
                 const alicePrivateKey = Converter.convertByteArrayToHexString(aliceKey.k);
-                const alicePrivateKeyEnc = await CryptoService.encryptAES(alicePrivateKey, 'pinHashAlice');
+                const alicePrivateKeyEnc = await CryptoService.encryptAES(alicePrivateKey, 'alicePinHash');
 
                 const bobKey = ECKCDSA.keygen('edc23425f6281aeffe87431ffefa57af'.split(''));
                 const bobPublicKey = Converter.convertByteArrayToHexString(bobKey.p);
                 const bobPrivateKey = Converter.convertByteArrayToHexString(bobKey.k);
-                const bobPrivateKeyEnc = await CryptoService.encryptAES(bobPrivateKey, 'pinHashBob');
+                const bobPrivateKeyEnc = await CryptoService.encryptAES(bobPrivateKey, 'bobPinHash');
 
-                // FIXME: there's some error in either encryption or decryption.
-                // this is how it would work
                 // bob sends message to alice
-                const encryptedMessage = await service.encryptMessage2(
+                const encryptedMessage = await service.encryptMessage(
                     'message',
                     alicePublicKey,
                     bobPrivateKeyEnc,
-                    'pinHashBob'
+                    'bobPinHash'
                 );
 
-                // alice reads message from bob
-                const message = await service.decryptMessage2(
-                    encryptedMessage,
-                    bobPublicKey,
-                    alicePrivateKeyEnc,
-                    'pinHashAlice'
-                );
+                // synthetically removing IV delimiter
+                encryptedMessage.data = encryptedMessage.data.replace(':', '');
 
-                expect(message).toBe('message');
+                try {
+                    // alice reads message from bob
+                    const message = await service.decryptMessage(
+                        encryptedMessage,
+                        bobPublicKey,
+                        alicePrivateKeyEnc,
+                        'alicePinHash'
+                    );
+                    expect(false).toBeTruthy(); // should not hit here
+                } catch (e) {
+                    // no op
+                    expect(e.message).toBe('Invalid message format')
+                }
+
             })
         );
 
-        xit('should decrypt message as expected',
-            withCryptoService(async (service: CryptoService) => {
-                // FIXME: check out how to do this
-            })
-        )
     }); // encryptMessage/decryptMessage
 
+
+    // TODO: review these methods
     describe('generateSignature/verifySignature', () => {
         it('should generate signature as expected',
             withCryptoService(async (service: CryptoService) => {
