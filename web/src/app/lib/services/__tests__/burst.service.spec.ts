@@ -50,7 +50,6 @@ describe('BurstService', () => {
                         done();
                     });
 
-                    console.log(settings.node);
                     const request =  httpMock.expectOne(`${settings.node}?requestType=getBlockchainStatus`);
 
                     const mockedStatus = new BlockChainStatus();

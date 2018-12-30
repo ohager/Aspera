@@ -25,8 +25,6 @@ export class BurstService {
         let params: HttpParams = new HttpParams().set('requestType', 'getBlockchainStatus');
         let requestOptions = BurstUtil.getRequestOptions();
         requestOptions.params = params;
-
-        console.log(this.nodeUrl);
         return this.httpService.get<BlockChainStatus | HttpError>(this.nodeUrl, requestOptions);
     }
 
