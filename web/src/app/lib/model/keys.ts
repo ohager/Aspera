@@ -12,7 +12,7 @@ export class Keys {
     public publicKey: string;
     public signPrivateKey: string;
 
-    constructor(publicKey: string, agreementPrivateKey: string, signPrivateKey: string) {
+    constructor(publicKey: string = null, agreementPrivateKey: string = null, signPrivateKey: string = null) {
         this.agreementPrivateKey = agreementPrivateKey;
         this.publicKey = publicKey;
         this.signPrivateKey = signPrivateKey;

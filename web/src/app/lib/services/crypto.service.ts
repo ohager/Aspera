@@ -7,7 +7,7 @@ import * as CryptoJS from 'crypto-js';
 import * as BN from 'bn.js';
 import {Converter} from '../util';
 import {PassPhraseGenerator, ECKCDSA} from '../util/crypto';
-import {Keys} from '../model';
+import {EncryptedMessage, Keys} from '../model';
 import {BurstUtil} from '../util';
 import Dictionary, {DICTIONARY} from '../util/crypto/passPhraseGenerator/dictionary';
 
@@ -23,26 +23,28 @@ export class CryptoService {
     private passPhraseGenerator: PassPhraseGenerator;
 
     /**
-    * Convert Burst Address back to account id
-    */
+     * Convert Burst Address back to account id
+     */
     public static getAccountIdFromBurstAddress(address: string): Promise<string> {
         return new Promise((resolve, reject) => {
             const id = BurstUtil.decode(address);
-            if (!id) { reject(`Invalid BURST address: ${address}`) }
+            if (!id) {
+                reject(`Invalid BURST address: ${address}`)
+            }
             resolve(id);
         })
     }
 
     /**
-    * Encrypt a derived hd private key with a given pin and return it in Base64 form
-    */
+     * Encrypt a derived hd private key with a given pin and return it in Base64 form
+     */
     public static encryptAES(text: string, key: string): Promise<string> {
         return Promise.resolve(CryptoJS.AES.encrypt(text, key).toString())
     }
 
     /**
-    * Decrypt a derived hd private key with a given pin
-    */
+     * Decrypt a derived hd private key with a given pin
+     */
     public static decryptAES(encryptedBase64: string, key: string): Promise<string> {
         return Promise.resolve(CryptoJS.AES.decrypt(encryptedBase64, key).toString(CryptoJS.enc.Utf8));
     }
@@ -118,6 +120,69 @@ export class CryptoService {
             // TODO: refactor shitty nxt address resolution
             resolve(BurstUtil.encode(id));
         });
+    }
+
+
+    // TODO: this function is to checkout out ECC crypto - it works. something is wrong with encrypt or decrypt.
+    public async encryptMessage2(text: string, recipientPublicKey: string, senderPrivateKeyEncrypted: string, senderPinHash: string): Promise<EncryptedMessage> {
+
+        const senderPrivateKey = CryptoJS.AES.decrypt(senderPrivateKeyEncrypted, senderPinHash).toString(CryptoJS.enc.Utf8)
+        const sharedKey =
+            ECKCDSA.sharedkey(
+                Converter.convertHexStringToByteArray(senderPrivateKey),
+                Converter.convertHexStringToByteArray(recipientPublicKey)
+            );
+
+        // Randomize shared key
+        /*
+        const SHARED_KEY_SIZE = sharedKey.length;
+        const randomBytes = CryptoJS.lib.WordArray.random(SHARED_KEY_SIZE);
+        const randomNonce = Converter.convertWordArrayToUint8Array(randomBytes);
+        for (let i = 0; i < SHARED_KEY_SIZE; i++) {
+            sharedKey[i] ^= randomNonce[i];
+        }*/
+
+        // hash shared key
+        //let aeskey = CryptoJS.SHA256(Converter.convertByteArrayToWordArray(sharedKey));
+        const aeskey = Converter.convertByteArrayToHexString(sharedKey);
+        console.log('aeskey - encrypt', aeskey);
+
+        const iv = CryptoJS.lib.WordArray.random(16);
+        console.log('iv - encrypt', iv.toString());
+        // const nonce =
+
+        const encryptedTextBase64 = CryptoJS.AES.encrypt(text, aeskey, {iv}).toString();
+        const encryptedMessage = new EncryptedMessage();
+        encryptedMessage.data = `${iv.toString()}:${encryptedTextBase64}`;
+        // encryptedMessage.nonce = nonce;
+        encryptedMessage.isText = true;
+
+        return Promise.resolve(encryptedMessage);
+    }
+
+    // TODO: this function is to checkout out ECC crypto
+    public decryptMessage2(encryptedMessage: EncryptedMessage, senderPublicKey: string, recipientPrivateKeyEncrypted: string, recipientPinHash: string) {
+
+        const recipientPrivateKey = CryptoJS.AES.decrypt(recipientPrivateKeyEncrypted, recipientPinHash).toString(CryptoJS.enc.Utf8);
+        let sharedKey =
+            ECKCDSA.sharedkey(
+                Converter.convertHexStringToByteArray(recipientPrivateKey),
+                Converter.convertHexStringToByteArray(senderPublicKey)
+            );
+
+        const aeskey = Converter.convertByteArrayToHexString(sharedKey);
+        console.log('aeskey - decrypt', aeskey);
+
+        const tokens = encryptedMessage.data.split(':');
+        if (tokens.length !== 2) { throw new Error('Invalid message format'); }
+        const iv = tokens[0];
+        console.log('iv - decrypt', iv);
+        const text = CryptoJS.AES.decrypt(
+            tokens[1],
+            aeskey,
+            {iv: btoa(iv)}
+            ).toString(CryptoJS.enc.Utf8);
+        return Promise.resolve(text);
     }
 
     /*
@@ -246,6 +311,7 @@ export class CryptoService {
     /*
     * Concat signature with transactionHex
     */
+
     // TODO: need more context on this one here! - maybe unnecessary
     public generateSignedTransactionBytes(unsignedTransactionHex: string, signature: string): Promise<string> {
         return new Promise((resolve, reject) => {
