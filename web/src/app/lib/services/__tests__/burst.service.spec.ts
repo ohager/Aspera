@@ -46,6 +46,7 @@ describe('BurstService', () => {
         it('should return a valid status', (done) => {
                 inject([BurstService], (service: BurstService) => {
                     service.getBlockchainStatus().subscribe( response => {
+                        // @ts-ignore
                         expect(response.lastBlock).toBe('123');
                         done();
                     });
